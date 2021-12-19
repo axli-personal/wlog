@@ -1,15 +1,12 @@
 package wlog
 
-import "testing"
+import (
+	"github.com/axli-personal/wlog/mix"
+	"testing"
+)
 
-func TestSimpleMixLogger(t *testing.T) {
-	if logger := Mix.GetStatusLogger(Development); logger != nil {
-		logger.Print("status information")
-	}
-	if logger := Mix.GetServiceLogger(Development); logger != nil {
-		logger.Print("/api", "service information")
-	}
-	if logger := Mix.GetDatabaseLogger(Development); logger != nil {
-		logger.Print("query", "table", "database information")
-	}
+func TestSimpleLevelLogger(t *testing.T) {
+	Mix.Status(mix.Devp).Print("status information")
+	Mix.Service(mix.Devp).Print("/api", "service information")
+	Mix.Database(mix.Devp).Print("query", "table", "database information")
 }

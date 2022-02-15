@@ -6,33 +6,30 @@ import (
 	"strings"
 )
 
-// These levels are supported in the system
-// and most of them are picked from log4j.
-//
-// The logger with higher level will record more message.
+// These are the levels available in the system, mostly from log4j.
 const (
 	Off = iota - 1
 	Unset
-	Fatal
+	Fatal // Log with this level will call os.Exit(1).
 	Error
 	Warn
 	Info
 	Debug
 )
 
-// WithMaxLevel will wrapper a logger and enhance its ability.
+// WithMaxLevel will wrap a logger and enable it to detect levels.
 //
-// The level will not be preprocessed, so negative level will
-// block every message and level greater than Debug will record
-// every message. This is the default behavior of the system.
-func WithMaxLevel(logger Logger, level int, format bool) Logger {
+// A negative maxLevel will turn off the logger.
+//
+// Passing in nil logger will cause panic.
+func WithMaxLevel(logger Logger, maxLevel int, format bool) Logger {
 	if logger == nil {
 		panic("can't create logger from nil")
 	}
 
 	IncDepth(logger)
 
-	return &levelFilter{maxLevel: level, format: format, logger: logger}
+	return &levelFilter{maxLevel: maxLevel, format: format, logger: logger}
 }
 
 type levelFilter struct {
@@ -41,12 +38,12 @@ type levelFilter struct {
 	logger   Logger
 }
 
-func (filter *levelFilter) Log(options Options, columns ...string) {
+func (filter *levelFilter) Log(pairs Pairs, columns ...string) {
 	logLevel := Unset
 
-	for i := 0; i < len(options); i++ {
-		if strings.ToLower(options[i].Key) == "level" {
-			switch level := options[i].Val.(type) {
+	for i := 0; i < len(pairs); i++ {
+		if strings.ToLower(pairs[i].Key) == "level" {
+			switch level := pairs[i].Val.(type) {
 			case string:
 				logLevel = getIntLevel(level)
 			case int:
@@ -57,7 +54,7 @@ func (filter *levelFilter) Log(options Options, columns ...string) {
 				}
 			}
 
-			options[i].Key, options[i].Val = "", nil
+			pairs[i].Key, pairs[i].Val = "", nil
 			break
 		}
 	}
@@ -72,16 +69,16 @@ func (filter *levelFilter) Log(options Options, columns ...string) {
 		columns = append(columns, strconv.Itoa(logLevel))
 	}
 
-	filter.logger.Log(options, columns...)
+	filter.logger.Log(pairs, columns...)
 
 	if logLevel == Fatal {
 		os.Exit(1)
 	}
 }
 
-func (filter *levelFilter) MakeHeaders(headers []string) {
+func (filter *levelFilter) OutputHeaders(headers ...string) {
 	headers = append(headers, "Level")
-	filter.logger.MakeHeaders(headers)
+	filter.logger.OutputHeaders(headers...)
 }
 
 func getIntLevel(level string) int {
@@ -117,4 +114,8 @@ func getStrLevel(level int) string {
 	default:
 		return "Unset"
 	}
+}
+
+func (filter *levelFilter) Next() Logger {
+	return filter.logger
 }

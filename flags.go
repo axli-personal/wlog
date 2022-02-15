@@ -6,16 +6,15 @@ import (
 	"time"
 )
 
-// These flags are supported in the system
-// and most of them are picked from std log.
+// These are the flags available in the system, mostly from standard log package.
 const (
 	Time = 1 << iota
 	File
 )
 
-// WithFlag will add flag information to the output.
+// WithFlag will wrap a logger and enable it to output useful messages.
 //
-// Pass in nil logger will cause panic.
+// Passing in nil logger will cause panic.
 func WithFlag(logger Logger, flag int) Logger {
 	if logger == nil {
 		panic("can't create logger from nil")
@@ -30,7 +29,7 @@ type flagCollector struct {
 	logger Logger
 }
 
-func (collector *flagCollector) Log(options Options, columns ...string) {
+func (collector *flagCollector) Log(options Pairs, columns ...string) {
 	if collector.flag&Time != 0 {
 		now := time.Now()
 
@@ -52,29 +51,26 @@ func (collector *flagCollector) Log(options Options, columns ...string) {
 	collector.logger.Log(options, columns...)
 }
 
-func (collector *flagCollector) MakeHeaders(headers []string) {
+func (collector *flagCollector) OutputHeaders(headers ...string) {
 	if collector.flag&Time != 0 {
 		headers = append(headers, "Time")
 	}
 	if collector.flag&File != 0 {
 		headers = append(headers, "File")
 	}
-	collector.logger.MakeHeaders(headers)
+	collector.logger.OutputHeaders(headers...)
 }
 
 func IncDepth(logger Logger) {
 	// This may be expensive.
-	for {
-		switch l := logger.(type) {
-		case *flagCollector:
+	for logger != nil {
+		if l, ok := logger.(*flagCollector); ok {
 			l.depth++
-			return
-		case *levelFilter:
-			logger = l.logger
-		case *columnExtractor:
-			logger = l.logger
-		default:
-			return
 		}
+		logger = logger.Next()
 	}
+}
+
+func (collector *flagCollector) Next() Logger {
+	return collector.logger
 }

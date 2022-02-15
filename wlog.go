@@ -1,18 +1,21 @@
 package wlog
 
-type Options []struct {
+type Pairs []struct {
 	Key string
 	Val interface{}
 }
 
 type Logger interface {
-	// Log will output preprocessed options.
+	// Log will output structured pairs.
 	//
-	// Do not pass in any columns except you really know it.
-	Log(options Options, columns ...string)
+	// Don't pass in any columns unless you know the consequences.
+	Log(pairs Pairs, columns ...string)
 
-	// MakeHeaders will output headers.
+	// OutputHeaders will output headers.
 	//
-	// Pass in nil to generate headers.
-	MakeHeaders(headers []string)
+	// Don't pass in any headers unless you know the consequences.
+	OutputHeaders(headers ...string)
+
+	// Next will return next logger or nil.
+	Next() Logger
 }

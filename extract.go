@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-// WithExtract will add extract specific column.
+// WithExtract will extract specific column.
 //
-// Do not extract column whose lowercase matches "level".
+// Don't use keyword equal to "level"(case-insensitive).
 //
-// Pass in nil logger will cause panic.
+// Passing in nil logger will cause panic.
 func WithExtract(logger Logger, keyword string) Logger {
 	if logger == nil {
 		panic("can't create logger from nil")
@@ -28,7 +28,7 @@ type columnExtractor struct {
 	keyword string
 }
 
-func (extractor *columnExtractor) Log(options Options, columns ...string) {
+func (extractor *columnExtractor) Log(options Pairs, columns ...string) {
 	column := "NULL"
 	for i := 0; i < len(options); i++ {
 		if options[i].Key == extractor.keyword {
@@ -43,7 +43,11 @@ func (extractor *columnExtractor) Log(options Options, columns ...string) {
 	extractor.logger.Log(options, columns...)
 }
 
-func (extractor *columnExtractor) MakeHeaders(headers []string) {
+func (extractor *columnExtractor) OutputHeaders(headers ...string) {
 	headers = append(headers, extractor.keyword)
-	extractor.logger.MakeHeaders(headers)
+	extractor.logger.OutputHeaders(headers...)
+}
+
+func (extractor *columnExtractor) Next() Logger {
+	return extractor.logger
 }

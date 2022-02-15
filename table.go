@@ -7,19 +7,19 @@ import (
 	"sync"
 )
 
-// NewLogger create the base logger.
+// NewLogger will create a basic logger.
 //
-// Default writer: os.Stdout.
+// Default: (out == nil) -> os.Stdout.
 //
-// Default split: "||"
-func NewLogger(writer io.Writer, split string) Logger {
-	if writer == nil {
-		writer = os.Stdout
+// Default: (split == "") -> "||".
+func NewLogger(out io.Writer, split string) Logger {
+	if out == nil {
+		out = os.Stdout
 	}
 	if len(split) == 0 {
 		split = "||"
 	}
-	return &tableLogger{out: writer, split: split}
+	return &tableLogger{out: out, split: split}
 }
 
 type tableLogger struct {
@@ -28,26 +28,31 @@ type tableLogger struct {
 	out   io.Writer
 }
 
-func (l *tableLogger) Log(options Options, columns ...string) {
+func (l *tableLogger) Log(pairs Pairs, columns ...string) {
 	l.lock.Lock()
 
 	for i := 0; i < len(columns); i++ {
 		fmt.Fprint(l.out, columns[i], l.split)
 	}
 
-	last := len(options) - 1
+	last := len(pairs) - 1
+
+	for last > -1 {
+		if len(pairs[last].Key) != 0 || pairs[last].Val != nil {
+			break
+		}
+		last--
+	}
 
 	for i := 0; i < last; i++ {
-		if len(options[i].Key) != 0 || options[i].Val != nil {
-			fmt.Fprint(l.out, options[i].Key, "=", options[i].Val, ";")
+		if len(pairs[i].Key) != 0 || pairs[i].Val != nil {
+			fmt.Fprint(l.out, pairs[i].Key, "=", pairs[i].Val, ";")
 		}
 	}
 
 	// Print the last pair.
 	if last > -1 {
-		if len(options[last].Key) != 0 || options[last].Val != nil {
-			fmt.Fprint(l.out, options[last].Key, "=", options[last].Val)
-		}
+		fmt.Fprint(l.out, pairs[last].Key, "=", pairs[last].Val)
 	}
 
 	fmt.Fprint(l.out, "\n")
@@ -55,7 +60,7 @@ func (l *tableLogger) Log(options Options, columns ...string) {
 	l.lock.Unlock()
 }
 
-func (l *tableLogger) MakeHeaders(headers []string) {
+func (l *tableLogger) OutputHeaders(headers ...string) {
 	l.lock.Lock()
 
 	for i := 0; i < len(headers); i++ {
@@ -65,4 +70,8 @@ func (l *tableLogger) MakeHeaders(headers []string) {
 	fmt.Fprint(l.out, "Details\n")
 
 	l.lock.Unlock()
+}
+
+func (l *tableLogger) Next() Logger {
+	return nil
 }

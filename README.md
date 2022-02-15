@@ -1,25 +1,59 @@
 # Web Log
 
-Logging system designed for backend web application.
+Package designed for web application, but not only for this purpose.
 
-## Clean
+## History
 
-This is very clean logging system and easy to use.
+At the beginning, it was designed to enhance the standard log package.
 
-## Process
+Therefore, it needs to be compatible with the standard log package.
 
-It is still in development period.
+But this principle make it hard to develop and use in web application.
 
-1> The `Panic` and `Panicf` haven't implemented.
+Now, the package doesn't develop on the top of the standard log package.
 
-2> The basic logger is from standard library, which will be replaced in the future.
-
-3> The flag, option and level is still wait to design.
+Our new principle: **Structured**, **Analyzable**, **Stable**.
 
 ## Example
 
 ```go
-wlog.Mix.Status(mix.Devp).Print("status information")
-wlog.Mix.Service(mix.Devp).Print("/api", "service information")
-wlog.Mix.Database(mix.Devp).Print("query", "table", "database information")
+package main
+
+import (
+	"errors"
+	"github.com/axli-personal/wlog"
+	"os"
+)
+
+func main() {
+	var logger wlog.Logger
+
+	logger = wlog.NewLogger(os.Stdout, "||")
+	logger = wlog.WithMaxLevel(logger, wlog.Info, true)
+	logger = wlog.WithExtract(logger, "Instance")
+	logger = wlog.WithExtract(logger, "API")
+	logger = wlog.WithExtract(logger, "Component")
+	logger = wlog.WithFlag(logger, wlog.Time|wlog.File)
+
+	logger.MakeHeaders(nil)
+
+	err := errors.New("database fail to response")
+
+	logger.Log(wlog.Options{
+		{"level", wlog.Warn},
+		{"Instance", "100"},
+		{"API", "/service/login"},
+		{"Component", "Account"},
+		{"Problem", err},
+	})
+
+	logger.Log(wlog.Options{
+		{"level", "Fatal"},
+		{"Instance", "200"},
+		{"Problem", "memory not enough"},
+		{"Memory", "8GB"},
+	})
+}
 ```
+
+![Example Output](./img/output.png)

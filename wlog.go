@@ -1,4 +1,3 @@
-// Logging system designed for backend web application.
 package wlog
 
 type Options []struct {
@@ -7,6 +6,13 @@ type Options []struct {
 }
 
 type Logger interface {
+	// Log will output preprocessed options.
+	//
+	// Do not pass in any columns except you really know it.
 	Log(options Options, columns ...string)
+
+	// MakeHeaders will output headers.
+	//
+	// Pass in nil to generate headers.
 	MakeHeaders(headers []string)
 }

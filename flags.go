@@ -6,11 +6,16 @@ import (
 	"time"
 )
 
+// These flags are supported in the system
+// and most of them are picked from std log.
 const (
 	Time = 1 << iota
 	File
 )
 
+// WithFlag will add flag information to the output.
+//
+// Pass in nil logger will cause panic.
 func WithFlag(logger Logger, flag int) Logger {
 	if logger == nil {
 		panic("can't create logger from nil")

@@ -7,6 +7,11 @@ import (
 	"sync"
 )
 
+// NewLogger create the base logger.
+//
+// Default writer: os.Stdout.
+//
+// Default split: "||"
 func NewLogger(writer io.Writer, split string) Logger {
 	if writer == nil {
 		writer = os.Stdout

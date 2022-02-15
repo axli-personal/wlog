@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+// WithExtract will add extract specific column.
+//
+// Do not extract column whose lowercase matches "level".
+//
+// Pass in nil logger will cause panic.
 func WithExtract(logger Logger, keyword string) Logger {
 	if logger == nil {
 		panic("can't create logger from nil")

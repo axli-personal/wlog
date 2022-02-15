@@ -1,3 +1,0 @@
-Time||File||Component||API||Instance||Level||Details
-2022/02/14 23:28:24||D:/GitFlow/wlog/wlog_test.go:24||Account||/service/login||100||Warn||Problem=database fail to response
-2022/02/14 23:28:24||D:/GitFlow/wlog/wlog_test.go:32||NULL||NULL||200||Fatal||Problem=memory not enough;Memory=8GB

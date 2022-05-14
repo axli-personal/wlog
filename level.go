@@ -1,7 +1,6 @@
 package wlog
 
 import (
-	"os"
 	"strconv"
 	"strings"
 )
@@ -10,7 +9,7 @@ import (
 const (
 	Off = iota - 1
 	Unset
-	Fatal // Log with this level will call os.Exit(1).
+	Fatal // Log with this level will call panic().
 	Error
 	Warn
 	Info
@@ -72,7 +71,7 @@ func (filter *levelFilter) Log(pairs Pairs, columns ...string) {
 	filter.logger.Log(pairs, columns...)
 
 	if logLevel == Fatal {
-		os.Exit(1)
+		panic("log with fatal level")
 	}
 }
 

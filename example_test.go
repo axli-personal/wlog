@@ -1,14 +1,12 @@
 package wlog_test
 
 import (
-	"net/http"
-
 	"github.com/axli-personal/wlog"
+	"net/http"
 	"os"
-	"testing"
 )
 
-func TestAll(t *testing.T) {
+func Example() {
 	// Make logger.
 	var logger wlog.Logger
 
@@ -16,7 +14,7 @@ func TestAll(t *testing.T) {
 	logger = wlog.WithExtract(logger, "API")
 	logger = wlog.WithExtract(logger, "Component")
 	logger = wlog.WithExtract(logger, "Instance")
-	logger = wlog.WithFlag(logger, wlog.Time|wlog.File)
+	logger = wlog.WithFlag(logger, wlog.File)
 	logger = wlog.WithMaxLevel(logger, wlog.Info, true)
 
 	// Start logging.
@@ -45,10 +43,17 @@ func TestAll(t *testing.T) {
 		{"Problem", "database fail to response"},
 	})
 
+	defer func() { recover() }()
 	logger.Log(wlog.Pairs{
 		{"Level", "Fatal"},
 		{"Instance", 200},
 		{"Problem", "memory not enough"},
 		{"Memory", "8GB"},
 	})
+
+	// Output:
+	// Level||File||Instance||Component||API||Details
+	// Info||example_test.go:31||50||NULL||/service/login||IP=100.100.100.100
+	// Warn||example_test.go:38||100||Account||/service/login||Problem=database fail to response
+	// Fatal||example_test.go:47||200||NULL||NULL||Problem=memory not enough;Memory=8GB
 }

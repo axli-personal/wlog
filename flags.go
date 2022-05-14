@@ -2,9 +2,12 @@ package wlog
 
 import (
 	"fmt"
+	"path"
 	"runtime"
 	"time"
 )
+
+const DefaultTimeFormat = "2006-01-02 15:04:05.000"
 
 // These are the flags available in the system, mostly from standard log package.
 const (
@@ -31,20 +34,13 @@ type flagCollector struct {
 
 func (collector *flagCollector) Log(options Pairs, columns ...string) {
 	if collector.flag&Time != 0 {
-		now := time.Now()
-
-		year, month, day := now.Date()
-		hour, min, sec := now.Clock()
-
-		str := fmt.Sprintf("%04d/%02d/%02d %02d:%02d:%02d", year, month, day, hour, min, sec)
-
-		columns = append(columns, str)
+		columns = append(columns, time.Now().Format(DefaultTimeFormat))
 	}
 
 	if collector.flag&File != 0 {
-		_, file, line, _ := runtime.Caller(collector.depth)
-
-		str := fmt.Sprintf("%s:%d", file, line)
+		_, filePath, line, _ := runtime.Caller(collector.depth)
+		_, fileName := path.Split(filePath)
+		str := fmt.Sprintf("%s:%d", fileName, line)
 		columns = append(columns, str)
 	}
 

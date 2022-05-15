@@ -15,7 +15,7 @@ func Example() {
 	logger = wlog.WithExtract(logger, "Component")
 	logger = wlog.WithExtract(logger, "Instance")
 	logger = wlog.WithFlag(logger, wlog.File)
-	logger = wlog.WithMaxLevel(logger, wlog.Info, true)
+	logger = wlog.WithMaxLevel(logger, wlog.Info)
 
 	// Start logging.
 	logger.OutputHeaders()
